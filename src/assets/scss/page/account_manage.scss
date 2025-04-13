@@ -1,0 +1,110 @@
+.account_manage {
+  .big_bg {
+    height: 100vh;
+    width: 100vw;
+    background-image: url('~@/assets/img/page/use_nowdo_1.png'),
+      url('~@/assets/img/page/use_nowdo_2.png');
+    background-repeat: no-repeat no-repeat;
+    background-position: left bottom, right bottom;
+    background-size: 368px 368px;
+    background-color: #fefcf4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .mid_place {
+      width: 400px;
+      height: 380px;
+      box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 10px;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      padding-top: 10px;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      .logo {
+        margin-left: 50px;
+        margin-bottom: 30px;
+      }
+
+      .input_place {
+        width: 100%;
+        .each_input_row {
+          display: flex;
+          align-items: center;
+          margin-bottom: 30px;
+          justify-content: center;
+          position: relative;
+          .input_title {
+            margin-right: 30px;
+          }
+          .input {
+            padding-left: 10px;
+            height: 30px;
+            width: 60%;
+            &:focus {
+              outline: none;
+            }
+          }
+          .wrong_word {
+            color: $wrong;
+            position: absolute;
+            bottom: -20px;
+            left: 110px;
+          }
+        }
+      }
+
+      .remember_me_row {
+        display: flex;
+        align-items: center;
+        width: 60%;
+        margin-bottom: 30px;
+        #remember_me {
+          // width: 10px;
+          // height: 10px;
+          transform: scale(1.5);
+          margin-right: 10px;
+        }
+        .remember_me_title {
+        }
+        .forget_password {
+          margin-left: auto;
+          cursor: pointer;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+      .btn_space {
+        display: flex;
+        justify-content: space-between;
+        width: 50%;
+        .btn {
+          color: white;
+          cursor: pointer;
+          border-radius: 10px;
+          width: 80px;
+          height: 30px;
+          padding: 5px;
+          line-height: 30px;
+          text-align: center;
+        }
+        .send {
+          background-color: #0065e0;
+          &:hover {
+            background-color: #045fce;
+          }
+        }
+        .return {
+          background-color: $light_green;
+
+          &:hover {
+            background-color: $dark_green;
+          }
+        }
+      }
+    }
+  }
+}

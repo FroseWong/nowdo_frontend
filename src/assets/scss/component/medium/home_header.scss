@@ -1,0 +1,39 @@
+.home_header {
+//   margin-bottom: 10px;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  .home_header_in {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .logo {
+    }
+    .right_top {
+      display: flex;
+      .btn {
+        width: 80px;
+        height: 50px;
+        line-height: 50px;
+        font-size: 20px;
+        background-color: white;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.3s;
+        // margin: 0 3px;
+      }
+      .login {
+        &:hover {
+          background-color: rgb(175, 173, 173);
+          color: white;
+        }
+      }
+      .register {
+        background-color: $dark_green;
+        color: white;
+        &:hover {
+          background-color: $light_green;
+        }
+      }
+    }
+  }
+}

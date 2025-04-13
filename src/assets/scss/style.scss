@@ -1,0 +1,29 @@
+@use 'sass:math';
+@import '@/assets/scss/base/base.scss';
+@import '@/assets/scss/mixin/mixin.scss';
+@import '@/assets/scss/component/component.scss';
+@import '@/assets/scss/page/page.scss';
+
+// 隱藏用的class
+.hidden {
+  display: none;
+}
+
+// 背景半透明灰色
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  z-index: 15;
+}
+
+.wrapper {
+  width: 1200px;
+  // margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
+}

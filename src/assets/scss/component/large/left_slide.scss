@@ -1,0 +1,109 @@
+.left_slide {
+  min-width: 260px;
+  background-color: white;
+  height: calc(100vh - 61px);
+  border-right: 1px solid $line;
+  color: $content;
+  .slide_top {
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    margin-bottom: 30px;
+    font-size: $pc_h5;
+
+    .each_top {
+      display: flex;
+      padding: 10px 10px 10px 30px;
+      cursor: pointer;
+      align-items: center;
+
+      // transition: 0.3s;
+      &.extend {
+        justify-content: space-between;
+        cursor: default;
+        display: none;
+        &:hover {
+          background-color: white;
+        }
+      }
+      &.focus {
+        background-color: rgb(159, 159, 159);
+      }
+
+      &:hover {
+        background-color: rgb(218, 218, 218);
+      }
+      .fa-chess-board {
+        margin-right: 10px;
+      }
+
+      .top_title {
+      }
+
+      .fa-angle-left {
+        cursor: pointer;
+        padding: 5px;
+        &:hover {
+          background-color: rgb(218, 218, 218);
+        }
+      }
+    }
+  }
+  .slide_bottom {
+    .your_board {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 30px 7px 30px;
+      font-size: $pc_h6;
+      margin-bottom: 10px;
+      .your_title {
+        font-weight: bold;
+      }
+      .fa-plus {
+        cursor: pointer;
+        padding: 5px;
+        &:hover {
+          background-color: rgb(218, 218, 218);
+        }
+
+        &.full {
+          cursor: not-allowed;
+          &:hover {
+            background-color: transparent;
+          }
+        }
+      }
+    }
+
+    .board_list {
+      max-height: calc(100vh - 200px);
+      // max-height: 100px;
+      // background-color: red;
+      overflow-y: auto;
+      .each_board {
+        padding: 7px 30px 7px 30px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        &.focus {
+          background-color: rgb(159, 159, 159);
+        }
+
+        &:hover {
+          background-color: rgb(218, 218, 218);
+        }
+
+        .board_pre_div {
+          width: 24px;
+          height: 20px;
+          margin-right: 10px;
+          background-size: cover;
+          background-position: center;
+        }
+        .board_title {
+        }
+      }
+    }
+  }
+}

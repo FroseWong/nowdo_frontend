@@ -1,0 +1,27 @@
+$color: (
+  'dark_green': #2f855a,
+  'light_green': #38a169,
+  'background': #f7fafc,
+  'line': #cbd5e0,
+  'title': #1a202c,
+  'content': #4a5568,
+
+  'blue': #36a7c7,
+  'dark_blue': #f9cf00,
+  'white': #ffffff,
+  'orange': #ff7f00,
+  'wrong': #e60000
+);
+
+$dark_green: map-get($color, 'dark_green');
+$light_green: map-get($color, 'light_green');
+$background: map-get($color, 'background');
+$line: map-get($color, 'line');
+$title: map-get($color, 'title');
+$content: map-get($color, 'content');
+$wrong: map-get($color, 'wrong');
+
+$blue: map-get($color, 'blue');
+$dark_blue: map-get($color, 'dark_blue');
+$white: map-get($color, 'white');
+$orange: map-get($color, 'orange');

@@ -1,0 +1,24 @@
+.footer {
+    background-color: $content;
+    color: white;
+    line-height: 1.4;
+  .footer_in {
+    display: flex;
+    justify-content: space-around;
+    padding: 30px;
+    .footer_left {
+      .each_description {
+      }
+    }
+    .footer_right {
+      .each_link {
+        cursor: pointer;
+        box-sizing: border-box;
+        &:hover{
+            // border-bottom: 1px solid black;
+            text-decoration: underline;
+        }
+      }
+    }
+  }
+}

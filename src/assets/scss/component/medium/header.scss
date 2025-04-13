@@ -1,0 +1,53 @@
+.header {
+  //   margin-bottom: 10px;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding-left: 15px;
+  padding-right: 60px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid $line;
+  .logo {
+    cursor: pointer;
+  }
+  .right_top {
+    position: relative;
+    .member_icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: orange;
+      text-align: center;
+      line-height: 40px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .member_drop_list {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      width: 150px;
+      left: 50%;
+      top: 50px;
+      transform: translate(-50%, 0);
+      z-index: 5;
+      //   left: -150px;
+      .item {
+        box-sizing: border-box;
+        background-color: $line;
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+        border: 1px solid black;
+        margin-bottom: -1px;
+        &:hover {
+          background-color: $content;
+          color: white;
+        }
+      }
+    }
+  }
+}

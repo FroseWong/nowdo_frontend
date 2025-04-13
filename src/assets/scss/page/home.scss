@@ -1,0 +1,130 @@
+.home {
+  .mid_place {
+    // background-color: red;
+    background-color: #f8f3e8;
+    .mid_place_in {
+      display: flex;
+      height: 500px;
+
+      .mid_left {
+        flex-basis: 0;
+        flex-grow: 1;
+        line-height: 1.2;
+        padding-left: 30px;
+        padding-top: 50px;
+
+        .title {
+          font-size: $pc_h1;
+          margin-bottom: 20px;
+        }
+        .sec_title {
+          font-size: $pc_h4;
+          margin-bottom: 30px;
+        }
+        .input_row {
+          display: flex;
+          align-items: center;
+          .register_input {
+            width: 300px;
+            height: 50px;
+            font-size: $pc_h6;
+            padding-left: 10px;
+            box-sizing: border-box;
+            margin-right: 20px;
+            &:focus {
+              outline: 0;
+            }
+          }
+          .register {
+            width: 100px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            background-color: $dark_green;
+            transition: 0.3s;
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+            &:hover {
+              background-color: $light_green;
+            }
+          }
+        }
+      }
+      .mid_right {
+        flex-basis: 0;
+        flex-grow: 1;
+        background-image: url('@/assets/img/page/home_bg_1.png');
+        background-size: contain;
+        background-position: center center;
+        background-repeat: no-repeat;
+      }
+    }
+  }
+  .bottom_place {
+    padding-top: 30px;
+    line-height: 1.2;
+    padding-bottom: 30px;
+    .bottom_intro {
+      font-size: $pc_h5;
+      margin-bottom: 10px;
+    }
+    .bottom_title {
+      font-size: $pc_h3;
+      margin-bottom: 20px;
+    }
+    .bottom_description {
+      font-size: $pc_h4;
+      margin-bottom: 30px;
+    }
+    .pic_row {
+      display: flex;
+
+      .pic_left {
+        flex-basis: 0;
+        flex-grow: 1;
+        margin-right: 20px;
+        .btn {
+          margin-bottom: 30px;
+          line-height: 1.2;
+          cursor: pointer;
+          position: relative;
+          padding: 10px;
+          transition: .3s;
+          &.focus {
+            box-shadow: rgba(9, 30, 66, 0.15) 0px 0.5rem 1rem 0;
+            &::after {
+              content: '';
+              background-color: rgb(0, 199, 229);
+              border-radius: 0.3rem 0px 0px 0.3rem;
+              bottom: 0px;
+              content: '';
+              left: -9px;
+              position: absolute;
+              top: 0px;
+              width: 0.5rem;
+            }
+          }
+
+          .btn_title {
+            font-size: $pc_h5;
+            margin-bottom: 10px;
+          }
+          .btn_description {
+            font-size: $pc_h6;
+          }
+        }
+      }
+      .pic_right {
+        flex-basis: 0;
+        flex-grow: 2;
+        // background-color: red;
+        // height: 100px;
+        width: 100px;
+        background-position: center center;
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+    }
+  }
+}
