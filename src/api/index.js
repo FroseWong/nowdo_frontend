@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api', // 🌐 這是你的 Spring Boot 後端 baseURL
+  baseURL: process.env.VUE_APP_API_BASE_URL, // 🌐 這是你的 Spring Boot 後端 baseURL
+
   headers: {
     'Content-Type': 'application/json'
   }
