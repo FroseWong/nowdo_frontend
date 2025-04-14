@@ -11,7 +11,7 @@ const api = axios.create({
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (url !== '/auth/login' && error.response?.status === 401) {
       console.warn('Token 無效或過期，請重新登入');
       localStorage.removeItem('nowdoToken');
       localStorage.removeItem('nowdoUser');
