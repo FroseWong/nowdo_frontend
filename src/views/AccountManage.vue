@@ -67,8 +67,9 @@ const confirmBtnClick = async () => {
     };
     console.log('obj', obj);
     const res = await userApi.updateUsername(obj);
+
     console.log('res', res);
-    if (res && res.id) {
+    if (res.success) {
       Swal.fire({
         icon: 'success',
         title: '使用者名稱更新成功',
@@ -76,8 +77,15 @@ const confirmBtnClick = async () => {
         timer: 1500
       });
 
-      localStorage.setItem('nowdoUser', JSON.stringify(res));
+      localStorage.setItem('nowdoUser', JSON.stringify(res.data));
       getLocalUserData();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: '變更失敗',
+        text: res.message,
+        confirmButtonText: '確認'
+      });
     }
   } else {
     Swal.fire({

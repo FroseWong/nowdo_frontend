@@ -1,13 +1,13 @@
 <template>
-  <div class="overlay" v-show="addBoardPopupShow"></div>
-  <div class="add_board_popup" v-show="addBoardPopupShow">
+  <div class="overlay" v-show="updateBoardPopupShow"></div>
+  <div class="add_board_popup" v-show="updateBoardPopupShow">
     <div class="add_board_popup_in">
       <font-awesome-icon
         :icon="['fas', 'xmark']"
         class="fa-xmark"
-        @click="openCloseAddBoardPopup({ status: false })"
+        @click="openCloseUpdateBoardPopup({ status: false })"
       />
-      <div class="title">建立看板</div>
+      <div class="title">更新看板</div>
 
       <div class="board_name">
         <div class="board_name_title">看板名稱</div>
@@ -61,8 +61,14 @@
           </div>
           <div class="wrong_word" v-show="imageWrongWordShow">請選擇背景</div>
         </div>
+
+        <!-- <color-picker
+          class="color_picker"
+          v-model:pureColor="pureColor"
+          v-model:gradientColor="gradientColor"
+        /> -->
       </div>
-      <div class="confirm_add_btn" @click="confirmBtnClick">建立</div>
+      <div class="confirm_add_btn" @click="confirmBtnClick">更新</div>
     </div>
   </div>
 </template>
@@ -80,14 +86,15 @@ import pictureApi from '@/api/picture';
 import boardApi from '@/api/board';
 
 onMounted(async () => {
-  EventBus.on(BusEvents.ADD_BOARD, openCloseAddBoardPopup);
-  EventBus.on(BusEvents.ADD_LOAD_PICTURE, getLoadPicture);
+  EventBus.on(BusEvents.UPDATE_BOARD, openCloseUpdateBoardPopup);
+  EventBus.on(BusEvents.UPDATE_LOAD_PICTURE, getLoadPicture);
+
   loadPicture();
 });
 
 onUnmounted(() => {
-  EventBus.off(BusEvents.ADD_BOARD, openCloseAddBoardPopup);
-  EventBus.off(BusEvents.ADD_LOAD_PICTURE, getLoadPicture);
+  EventBus.off(BusEvents.UPDATE_BOARD, openCloseUpdateBoardPopup);
+  EventBus.off(BusEvents.UPDATE_LOAD_PICTURE, getLoadPicture);
 });
 
 const focusImageIndex = ref();
@@ -109,7 +116,7 @@ const uploading = ref(false);
 
 const nameWrongWordShow = ref(false);
 const imageWrongWordShow = ref(false);
-const addBoardPopupShow = ref(false);
+const updateBoardPopupShow = ref(false);
 
 const fileInput = ref(null);
 
@@ -120,9 +127,25 @@ const options = {
   useWebWorker: true
 };
 
-const openCloseAddBoardPopup = (params) => {
-  addBoardPopupShow.value = params.status;
-  if (!addBoardPopupShow.value) {
+const boardData = ref();
+
+const openCloseUpdateBoardPopup = (params) => {
+  updateBoardPopupShow.value = params.status;
+  boardData.value = params.data;
+  console.log('boardData', boardData);
+  boardNameInput.value = boardData.value?.boardTitle;
+  // focusImageIndex.value = imageArrUrl.value?.find(
+  //   (eachImgObj) => eachImgObj?.id === boardData.value?.pictureId
+  // )?.id;
+  focusImageIndex.value = imageArrUrl.value.findIndex((eachImgObj) => {
+    console.log('eachImg', eachImgObj);
+    return eachImgObj?.id === boardData.value?.pictureId;
+  });
+  // console.log('foundImg', foundImg);
+  console.log('imageArrUrl.value', imageArrUrl.value);
+  console.log('focusImageIndex.value ', focusImageIndex.value);
+  console.log('boardData', boardData.value);
+  if (!updateBoardPopupShow.value) {
     resetAddBoardPopup();
   }
 };
@@ -151,6 +174,9 @@ const imageClick = (i) => {
 };
 
 const confirmBtnClick = async () => {
+  console.log('focusImageIndex.value', focusImageIndex.value);
+  console.log('imageArrUrl.value', imageArrUrl.value);
+  console.log('focusImageIndex.value', focusImageIndex.value);
   let checkStatus = true;
 
   // 尚未輸入名稱
@@ -171,8 +197,8 @@ const confirmBtnClick = async () => {
 
   if (!checkStatus) return;
 
-  let pictureId;
-
+  let pictureId = 0;
+  let newPictureUrl = null;
   if (focusImageIndex.value === -1) {
     if (!file.value) return;
     try {
@@ -188,11 +214,11 @@ const confirmBtnClick = async () => {
       await uploadBytes(fileRef, compressedFile);
 
       // ✅ 拿圖片網址
-      const url = await getDownloadURL(fileRef);
-      imageUrl.value = url;
+      newPictureUrl = await getDownloadURL(fileRef);
+      imageUrl.value = newPictureUrl;
 
-      pictureId = (await pictureApi.uploadPhoto(url))?.data;
-      console.log('✅ 圖片上傳完成：', url);
+      pictureId = (await pictureApi.uploadPhoto(newPictureUrl))?.data;
+      console.log('✅ 圖片上傳完成：', newPictureUrl);
     } catch (err) {
       console.error('❌ 上傳或壓縮錯誤：', err);
     } finally {
@@ -202,17 +228,27 @@ const confirmBtnClick = async () => {
     pictureId = imageArrUrl.value[focusImageIndex.value].id;
   }
 
+  // boardData.value.id;
+  // boardNameInput.value;
+  // pictureId;
+  // newPictureUrl;
+
   // try {
-  const res = await boardApi.createBoard(boardNameInput.value, pictureId);
+  const res = await boardApi.updateBoard(
+    boardData.value?.id,
+    boardNameInput.value,
+    pictureId,
+    newPictureUrl
+  );
   if (res.success) {
-    openCloseAddBoardPopup({ status: false });
-    EventBus.emit(BusEvents.ADD_BOARD_OVER);
+    openCloseUpdateBoardPopup({ status: false });
+    EventBus.emit(BusEvents.UPDATE_BOARD_OVER);
     boardNameInput.value = '';
     focusImageIndex.value = null;
     Swal.fire({
       // position: 'top-end',
       icon: 'success',
-      title: '看板新增成功',
+      title: '看板更新成功',
       showConfirmButton: false,
       timer: 1500
     });
@@ -231,6 +267,27 @@ const confirmBtnClick = async () => {
 
   // }
 };
+
+async function handleImageUpload(event) {
+  const imageFile = event.target.files[0];
+  console.log('originalFile instanceof Blob', imageFile instanceof Blob); // true
+  console.log(`originalFile size ${imageFile.size / 1024 / 1024} MB`);
+
+  const options = {
+    maxSizeMB: 1,
+    maxWidthOrHeight: 1920,
+    useWebWorker: true
+  };
+  try {
+    const compressedFile = await imageCompression(imageFile, options);
+    console.log('compressedFile instanceof Blob', compressedFile instanceof Blob); // true
+    console.log(`compressedFile size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
+
+    await uploadToServer(compressedFile); // write your own logic
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 // 確認要刪除圖片
 const makeSureDeleteImg = async (img) => {
@@ -251,18 +308,17 @@ const makeSureDeleteImg = async (img) => {
       if (res.success) {
         Swal.fire({
           title: '已刪除!',
-          // text: 'Your file has been deleted.',
           icon: 'success'
         });
         EventBus.emit(BusEvents.DELETE_IMAGE);
-        console.log('add觸發了delete image');
-        loadPicture();
-
         focusImageIndex.value = 0;
+        console.log('update觸發了delete image');
+
+        loadPicture();
       } else {
         Swal.fire({
           icon: 'error',
-          title: '刪除失敗',
+          title: '變更失敗',
           text: res?.message,
           confirmButtonText: '確認'
         });
@@ -280,14 +336,10 @@ const deleteImageFromFirebase = async (imageUrl) => {
 
     const fileRef = storageRef(storage, path);
 
-    const res = await deleteObject(fileRef);
+    await deleteObject(fileRef);
+    console.log('✅ 圖片已成功刪除');
+    loadPicture();
   } catch (error) {
-    Swal.fire({
-      icon: 'error',
-      title: '刪除失敗',
-      text: res?.message,
-      confirmButtonText: '確認'
-    });
     console.error('❌ 刪除圖片失敗：', error);
   }
 };
@@ -300,7 +352,7 @@ const loadPicture = async () => {
   const getPicturesRes = await pictureApi.getPictures();
   if (getPicturesRes.success) {
     imageArrUrl.value = [...getPicturesRes.data];
-    EventBus.emit(BusEvents.UPDATE_LOAD_PICTURE, imageArrUrl.value);
+    EventBus.emit(BusEvents.ADD_LOAD_PICTURE, imageArrUrl.value);
   }
 };
 

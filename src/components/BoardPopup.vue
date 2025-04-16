@@ -1,13 +1,13 @@
 <template>
-  <div class="overlay" v-show="addBoardPopupShow"></div>
-  <div class="add_board_popup" v-show="addBoardPopupShow">
+  <div class="overlay" v-show="boardPopupShow"></div>
+  <div class="add_board_popup" v-show="boardPopupShow">
     <div class="add_board_popup_in">
       <font-awesome-icon
         :icon="['fas', 'xmark']"
         class="fa-xmark"
-        @click="openCloseAddBoardPopup({ status: false })"
+        @click="openCloseBoardPopup({ status: false })"
       />
-      <div class="title">建立看板</div>
+      <div class="title">{{ actionText }}看板</div>
 
       <div class="board_name">
         <div class="board_name_title">看板名稱</div>
@@ -62,7 +62,7 @@
           <div class="wrong_word" v-show="imageWrongWordShow">請選擇背景</div>
         </div>
       </div>
-      <div class="confirm_add_btn" @click="confirmBtnClick">建立</div>
+      <div class="confirm_add_btn" @click="confirmBtnClick">{{ actionText }}</div>
     </div>
   </div>
 </template>
@@ -70,7 +70,6 @@
 <script setup>
 import { ref, onMounted, computed, watch, nextTick, onUnmounted } from 'vue';
 import imageCompression from 'browser-image-compression';
-import { ColorInputWithoutInstance } from 'tinycolor2';
 import EventBus from '@/utils/eventBus';
 import BusEvents from '@/utils/busEvents';
 import { storage } from '@/firebase'; // 你自己建立的 firebase.js 檔
@@ -80,15 +79,19 @@ import pictureApi from '@/api/picture';
 import boardApi from '@/api/board';
 
 onMounted(async () => {
-  EventBus.on(BusEvents.ADD_BOARD, openCloseAddBoardPopup);
+  EventBus.on(BusEvents.ADD_BOARD, openCloseBoardPopup);
+  EventBus.on(BusEvents.UPDATE_BOARD, openCloseBoardPopup);
   EventBus.on(BusEvents.ADD_LOAD_PICTURE, getLoadPicture);
   loadPicture();
 });
 
 onUnmounted(() => {
-  EventBus.off(BusEvents.ADD_BOARD, openCloseAddBoardPopup);
+  EventBus.off(BusEvents.ADD_BOARD, openCloseBoardPopup);
+  EventBus.off(BusEvents.UPDATE_BOARD, openCloseBoardPopup);
   EventBus.off(BusEvents.ADD_LOAD_PICTURE, getLoadPicture);
 });
+
+const boardData = ref();
 
 const focusImageIndex = ref();
 const boardNameInput = ref('');
@@ -101,6 +104,9 @@ const imageArrUrl = ref([
   }
 ]);
 
+const mode = ref('add');
+const actionText = computed(() => (mode.value === 'add' ? '建立' : '更新'));
+
 // firebase
 const file = ref(null);
 const imagePreviewUrl = ref(null); // 本地預覽圖片網址
@@ -109,7 +115,7 @@ const uploading = ref(false);
 
 const nameWrongWordShow = ref(false);
 const imageWrongWordShow = ref(false);
-const addBoardPopupShow = ref(false);
+const boardPopupShow = ref(false);
 
 const fileInput = ref(null);
 
@@ -120,9 +126,32 @@ const options = {
   useWebWorker: true
 };
 
-const openCloseAddBoardPopup = (params) => {
-  addBoardPopupShow.value = params.status;
-  if (!addBoardPopupShow.value) {
+const openCloseBoardPopup = (params) => {
+  boardPopupShow.value = params.status;
+  if (params?.data) {
+    boardData.value = params.data;
+    mode.value = 'edit';
+    boardNameInput.value = boardData.value?.boardTitle;
+    focusImageIndex.value = imageArrUrl.value.findIndex((eachImgObj) => {
+      return eachImgObj?.id === boardData.value?.pictureId;
+    });
+  } else {
+    mode.value = 'add';
+  }
+
+  if (!boardPopupShow.value) {
+    resetAddBoardPopup();
+  }
+};
+
+const openCloseUpdateBoardPopup = (params) => {
+  boardPopupShow.value = params.status;
+  boardData.value = params.data;
+  boardNameInput.value = boardData.value?.boardTitle;
+  focusImageIndex.value = imageArrUrl.value.findIndex((eachImgObj) => {
+    return eachImgObj?.id === boardData.value?.pictureId;
+  });
+  if (!boardPopupShow.value) {
     resetAddBoardPopup();
   }
 };
@@ -151,6 +180,8 @@ const imageClick = (i) => {
 };
 
 const confirmBtnClick = async () => {
+  console.log('focusImageIndex.value', focusImageIndex.value);
+
   let checkStatus = true;
 
   // 尚未輸入名稱
@@ -171,7 +202,8 @@ const confirmBtnClick = async () => {
 
   if (!checkStatus) return;
 
-  let pictureId;
+  let pictureId = 0;
+  let newPictureUrl = null;
 
   if (focusImageIndex.value === -1) {
     if (!file.value) return;
@@ -188,11 +220,11 @@ const confirmBtnClick = async () => {
       await uploadBytes(fileRef, compressedFile);
 
       // ✅ 拿圖片網址
-      const url = await getDownloadURL(fileRef);
-      imageUrl.value = url;
+      newPictureUrl = await getDownloadURL(fileRef);
+      imageUrl.value = newPictureUrl;
 
-      pictureId = (await pictureApi.uploadPhoto(url))?.data;
-      console.log('✅ 圖片上傳完成：', url);
+      pictureId = (await pictureApi.uploadPhoto(newPictureUrl))?.data;
+      console.log('✅ 圖片上傳完成：', newPictureUrl);
     } catch (err) {
       console.error('❌ 上傳或壓縮錯誤：', err);
     } finally {
@@ -203,33 +235,58 @@ const confirmBtnClick = async () => {
   }
 
   // try {
-  const res = await boardApi.createBoard(boardNameInput.value, pictureId);
-  if (res.success) {
-    openCloseAddBoardPopup({ status: false });
-    EventBus.emit(BusEvents.ADD_BOARD_OVER);
-    boardNameInput.value = '';
-    focusImageIndex.value = null;
-    Swal.fire({
-      // position: 'top-end',
-      icon: 'success',
-      title: '看板新增成功',
-      showConfirmButton: false,
-      timer: 1500
-    });
-    loadPicture();
+  if (mode.value === 'add') {
+    const res = await boardApi.createBoard(boardNameInput.value, pictureId);
+    if (res.success) {
+      openCloseBoardPopup({ status: false });
+      EventBus.emit(BusEvents.ADD_BOARD_OVER);
+      boardNameInput.value = '';
+      focusImageIndex.value = null;
+      Swal.fire({
+        // position: 'top-end',
+        icon: 'success',
+        title: '看板新增成功',
+        showConfirmButton: false,
+        timer: 1500
+      });
+      loadPicture();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: '註冊失敗',
+        text: res.message,
+        confirmButtonText: '確認'
+      });
+    }
   } else {
-    Swal.fire({
-      icon: 'error',
-      title: '註冊失敗',
-      text: res.message,
-      confirmButtonText: '確認'
-    });
+    const res = await boardApi.updateBoard(
+      boardData.value?.id,
+      boardNameInput.value,
+      pictureId,
+      newPictureUrl
+    );
+    if (res.success) {
+      openCloseUpdateBoardPopup({ status: false });
+      EventBus.emit(BusEvents.UPDATE_BOARD_OVER);
+      boardNameInput.value = '';
+      focusImageIndex.value = null;
+      Swal.fire({
+        // position: 'top-end',
+        icon: 'success',
+        title: '看板更新成功',
+        showConfirmButton: false,
+        timer: 1500
+      });
+      loadPicture();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: '註冊失敗',
+        text: res.message,
+        confirmButtonText: '確認'
+      });
+    }
   }
-
-  // } catch (err) {
-  // const errorMsg = err.response?.data?.message || '建立看板失敗，請稍後再試';
-
-  // }
 };
 
 // 確認要刪除圖片
@@ -251,7 +308,6 @@ const makeSureDeleteImg = async (img) => {
       if (res.success) {
         Swal.fire({
           title: '已刪除!',
-          // text: 'Your file has been deleted.',
           icon: 'success'
         });
         EventBus.emit(BusEvents.DELETE_IMAGE);

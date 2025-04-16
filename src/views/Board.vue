@@ -65,7 +65,11 @@
     <!-- card detail 以上 -->
 
     <Header />
-    <AddBoardPopup />
+    <!-- <AddBoardPopup />
+    <UpdateBoardPopup /> -->
+    <BoardPopup />
+
+    <!-- <BoardPopup :show="updateBoardPopupShow" mode="edit" @close="updateBoardPopupShow = false" /> -->
     <div class="mid_place">
       <LeftSlide
         :boardList="originBoardList"
@@ -83,6 +87,7 @@
           <div class="extend_btn" @click="extendListShowToggle">
             <font-awesome-icon :icon="['fas', 'ellipsis']" class="fa-solid fa-ellipsis" />
             <div class="extend_list" v-show="extendListShow">
+              <div class="item" @click="updateBoardPopupClick">更新看板</div>
               <div class="item" @click="deleteBoardCheck">刪除看板</div>
             </div>
           </div>
@@ -199,40 +204,57 @@
 import { ref, onMounted, computed, watch, nextTick, onUnmounted } from 'vue';
 import Header from '@/components/Header.vue';
 import LeftSlide from '@/components/LeftSlide.vue';
-import AddBoardPopup from '@/components/AddBoardPopup.vue';
+// import AddBoardPopup from '@/components/AddBoardPopup.vue';
+// import UpdateBoardPopup from '@/components/UpdateBoardPopup.vue';
+import BoardPopup from '@/components/BoardPopup.vue';
 import { useRoute } from 'vue-router';
 import { Container, Draggable } from 'vue3-smooth-dnd';
 import boardApi from '@/api/board';
 import listApi from '@/api/list';
 import cardApi from '@/api/card';
+import EventBus from '@/utils/eventBus';
+import BusEvents from '@/utils/busEvents';
 import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
 import { faL } from '@fortawesome/free-solid-svg-icons';
 
 onMounted(async () => {
-  // originBoardList.value.forEach((eachBoard) => {
-  //   eachBoard.backgroundColor = getRandomColor();
-  // });
-  const boardListRes = await boardApi.getBoards();
-  originBoardList.value = [...boardListRes];
-  if (board.value) board.value.addEventListener('click', handleBoardClickOutside);
   boardId.value = route.params.boardId;
 
+  if (board.value) board.value.addEventListener('click', handleBoardClickOutside);
   if (cardDetail.value) cardDetail.value.addEventListener('click', handleCardDetailClickOutSide);
 
-  console.log('cardDetail', cardDetail.value);
-
+  boardEvents.value.forEach((event) => {
+    EventBus.on(event, getLeftBoards);
+    EventBus.on(event, loadBoardDetail);
+  });
+  await getLeftBoards();
   await loadBoardDetail(boardId.value);
 });
 
 onUnmounted(() => {
   if (board.value) board.value.removeEventListener('click', handleBoardClickOutside);
   if (cardDetail.value) cardDetail.value.removeEventListener('click', handleCardDetailClickOutSide);
+
+  boardEvents.value.forEach((event) => {
+    EventBus.off(event, getLeftBoards);
+    EventBus.off(event, loadBoardDetail);
+  });
 });
 const route = useRoute();
 const router = useRouter();
 
+const boardEvents = ref([
+  BusEvents.ADD_BOARD_OVER,
+  BusEvents.UPDATE_BOARD_OVER,
+  BusEvents.DELETE_IMAGE
+]);
+
+const addBoardPopupShow = ref(false);
+const updateBoardPopupShow = ref(false);
+
 const boardId = ref('');
+const pictureId = ref(-1);
 const textAreaInput = ref([]);
 const cardDetailShow = ref(false);
 const descriptionTextareaShow = ref(false);
@@ -241,7 +263,7 @@ const board = ref(null);
 const lastActionList = ref({});
 const extendListShow = ref(false);
 const focusCard = ref({
-  cardTitle: '卡片標題asdasdasdasdasdasdasdasdsadasdasdasdasd',
+  cardTitle: '',
   cardDesc: '',
   isCompleted: false
 });
@@ -272,32 +294,10 @@ const cardDescTemp = ref(''); // 暫存card desc
 
 const listArray = ref([
   {
-    listTitle: '待辦事項1',
+    listTitle: '',
     cards: [
       {
-        cardTitle: '卡片標題asdasdasdasdasdasdasdasdsadasdasdasdasd',
-        cardDesc: '',
-        isCompleted: false
-      },
-      {
-        cardTitle: '卡片標題',
-        cardDesc: '',
-        isCompleted: false
-      }
-    ],
-    addingCard: false,
-    actionListShow: false
-  },
-  {
-    listTitle: '待辦事項',
-    cards: [
-      {
-        cardTitle: '卡片標題asdasdasdasdasdasdasdasdsadasdasdasdasd',
-        cardDesc: '',
-        isCompleted: false
-      },
-      {
-        cardTitle: '卡片標題',
+        cardTitle: '',
         cardDesc: '',
         isCompleted: false
       }
@@ -307,29 +307,37 @@ const listArray = ref([
   }
 ]);
 
+const getLeftBoards = async () => {
+  const boardListRes = await boardApi.getBoards();
+  if (boardListRes.success) {
+    originBoardList.value = [...boardListRes.data];
+  }
+};
+
 const openCardDetail = (card) => {
-  console.log('openCardDetail');
+  // console.log('openCardDetail');
   cardDetailShow.value = true;
   focusCard.value = card;
   descriptionTextareaShow.value = false;
 };
 
 const loadBoardDetail = async () => {
-  try {
-    const data = await boardApi.getBoardDetail(boardId.value); // boardId 實際用 route 也可以
-    console.log('data', data);
-    if (data) {
-      boardTitle.value = data.boardTitle;
-      listArray.value = [...data.lists];
-      backgroundImageUrl.value = data.imageUrl;
-      focusIndex.value = data.id;
-
-      console.log('focusIndex', focusIndex.value);
-    }
-  } catch (err) {
-    // show error toast or dialog
-    console.log('err', err);
-    router.push({ name: 'workspace' });
+  // try {
+  if (route.name === 'workspace') return;
+  boardId.value = route.params.boardId;
+  const res = await boardApi.getBoardDetail(boardId.value); // boardId 實際用 route 也可以
+  // console.log('res', res);
+  console.log('route.name', route.name);
+  if (res.success) {
+    boardTitle.value = res.data.boardTitle;
+    listArray.value = [...res.data.lists];
+    backgroundImageUrl.value = res.data.imageUrl;
+    focusIndex.value = res.data.id;
+    pictureId.value = res.data.pictureId;
+    // console.log('focusIndex', focusIndex.value);
+  } else {
+    console.log('res', res.message);
+    // router.push({ name: 'workspace' });
   }
 };
 
@@ -356,7 +364,7 @@ const addBtnClick = (i) => {
 };
 
 const cardCompleteClick = (card) => {
-  console.log('cardCompleteClick');
+  // console.log('cardCompleteClick');
   card.isCompleted = !card.isCompleted;
   cardUpdate(card);
 };
@@ -396,13 +404,13 @@ const handleBoardClickOutside = (e) => {
 };
 
 // drag function
-const onDropCard = (dropResult, list) => {
+const onDropCard = async (dropResult, list) => {
   // list.cards = applyDrag(list.cards, dropResult);
 
   const newCardList = applyDrag(list.cards, dropResult);
 
   if (!isOrderChanged(list.cards, newCardList)) {
-    console.log('順序未改變，不發出 API');
+    // console.log('順序未改變，不發出 API');
     return;
   }
 
@@ -417,20 +425,24 @@ const onDropCard = (dropResult, list) => {
     return obj;
   });
 
-  console.log('cardData', cardData);
+  // console.log('cardData', cardData);
 
-  cardApi.updateCardOrder(cardData);
-
+  const res = cardApi.updateCardOrder(cardData);
+  if (res.success) {
+    // 成功
+  } else {
+    // 失敗
+  }
   // console.log('list.cards', list);
 
   // cardApi
 };
 
-const onDropList = (dragResult, list) => {
+const onDropList = async (dragResult, list) => {
   const newList = applyDrag(listArray.value, dragResult);
 
   if (!isOrderChanged(listArray.value, newList)) {
-    console.log('順序未改變，不發出 API');
+    // console.log('順序未改變，不發出 API');
     return;
   }
 
@@ -444,7 +456,12 @@ const onDropList = (dragResult, list) => {
     return obj;
   });
 
-  listApi.updateListOrder(listData);
+  const res = await listApi.updateListOrder(listData);
+  if (res.success) {
+    // 成功
+  } else {
+    //失敗
+  }
 };
 
 const isOrderChanged = (before, after) => {
@@ -480,10 +497,6 @@ const addingListToggle = (status) => {
 };
 
 const createNewList = async () => {
-  console.log('create!');
-  console.log('boardId', boardId.value);
-  console.log('listTextAreaInputValue', listTextAreaInputValue.value);
-
   if (listTextAreaInputValue.value) {
     const obj = {
       boardId: boardId.value,
@@ -498,17 +511,30 @@ const createNewList = async () => {
 };
 
 const deleteList = async (list) => {
-  console.log('delete list');
-  console.log('list', list);
-  await listApi.deleteList(list.id);
-  await loadBoardDetail(boardId.value);
+  list.actionListShow = false;
+  Swal.fire({
+    title: '確定要刪除列表?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: '刪除',
+    cancelButtonText: '取消'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      const res = await listApi.deleteList(list.id);
+      if (res.success) {
+        await loadBoardDetail(boardId.value);
+        Swal.fire({
+          title: '已刪除!',
+          icon: 'success'
+        });
+      }
+    }
+  });
 };
 
 const createNewCard = async (list) => {
-  console.log('create card');
-  console.log('cardTextAreaInputValue', cardTextAreaInputValue.value);
-  console.log('list', list);
-
   if (cardTextAreaInputValue.value) {
     const obj = {
       cardTitle: cardTextAreaInputValue.value,
@@ -521,19 +547,37 @@ const createNewCard = async (list) => {
 };
 
 const deleteCard = async (focusCard) => {
-  cardDetailShow.value = false;
-  await cardApi.deleteCard(focusCard.id);
-  await loadBoardDetail(boardId.value);
+  Swal.fire({
+    title: '確定要刪除卡片?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: '刪除',
+    cancelButtonText: '取消'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      const res = await cardApi.deleteCard(focusCard.id);
+      if (res.success) {
+        await loadBoardDetail(boardId.value);
+        cardDetailShow.value = false;
+        Swal.fire({
+          title: '已刪除!',
+          icon: 'success'
+        });
+      }
+    }
+  });
 };
 
 const focusCardTitleStatusToggle = (status) => {
-  console.log('status', status);
+  // console.log('status', status);
   focusCardTitleStatus.value = status;
   if (status) {
     cardTitleTemp.value = focusCard.value.cardTitle;
   } else {
-    console.log('cardTitleTemp.value', cardTitleTemp.value);
-    console.log('focusCard.value.cardTitle', focusCard.value.cardTitle);
+    // console.log('cardTitleTemp.value', cardTitleTemp.value);
+    // console.log('focusCard.value.cardTitle', focusCard.value.cardTitle);
     if (cardTitleTemp.value != focusCard.value.cardTitle) {
       focusCard.value.cardTitle = cardTitleTemp.value;
       cardUpdate();
@@ -545,7 +589,6 @@ const handleCardDetailClickOutSide = (e) => {
   if (e.target.closest('.card_title')) return;
 
   if (!e.target.closest('.card_title_input') && focusCardTitleStatus.value) {
-    // focusCardTitleStatus.value = false;
     focusCardTitleStatusToggle(false);
   }
 };
@@ -554,8 +597,12 @@ const cardUpdate = async (card = focusCard.value) => {
   const obj = {
     ...card
   };
-  console.log('obj', obj);
-  await cardApi.updateCard(obj);
+  const res = await cardApi.updateCard(obj);
+  if (res.success) {
+    // 成功
+  } else {
+    // 失敗
+  }
 };
 const cardDescSave = () => {
   if (focusCard.value.cardDesc != cardDescTemp.value) {
@@ -568,7 +615,6 @@ const cardDescSave = () => {
 const deleteBoardCheck = async () => {
   Swal.fire({
     title: '確定要刪除看板?',
-    // text: "You won't be able to revert this!",
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#3085d6',
@@ -578,17 +624,39 @@ const deleteBoardCheck = async () => {
   }).then(async (result) => {
     if (result.isConfirmed) {
       const res = await boardApi.deleteBoard(boardId.value);
-      console.log('res', res);
-      Swal.fire({
-        title: '已刪除!',
-        // text: 'Your file has been deleted.',
-        icon: 'success'
-      });
-      setTimeout(() => {
-        router.push({ name: 'workspace' });
-      }, 500);
+      if (res.success) {
+        Swal.fire({
+          title: '已刪除!',
+          icon: 'success'
+        });
+        setTimeout(() => {
+          router.push({ name: 'workspace' });
+        }, 500);
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: '刪除失敗',
+          text: res?.message,
+          confirmButtonText: '確認'
+        });
+      }
     }
   });
+};
+
+const updateBoardPopupClick = () => {
+  // boardTitle.value = data.boardTitle;
+  // listArray.value = [...data.lists];
+  // backgroundImageUrl.value = data.imageUrl;
+  // focusIndex.value = data.id;
+  const obj = {
+    boardTitle: boardTitle.value,
+    id: boardId.value,
+    imageUrl: backgroundImageUrl.value,
+    pictureId: pictureId.value
+  };
+  console.log('board.vue開update board');
+  EventBus.emit(BusEvents.UPDATE_BOARD, { status: true, data: obj });
 };
 </script>
 

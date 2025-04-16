@@ -1,44 +1,33 @@
 import api from './index';
-import Swal from 'sweetalert2';
 
 const authApi = {
-  login(payload) {
-    return api
-      .post('/auth/login', payload)
-      .then((res) => res)
-      .catch((err) => {
-        if (err.response?.status === 401) {
-          return Promise.reject(new Error('帳號或密碼錯誤'));
-        }
-        return Promise.reject(new Error('登入失敗，請稍後再試'));
-      });
+  async login(payload) {
+    try {
+      const res = await api.post('/auth/login', payload);
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '登入失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   },
-  sendForgetPassword(payload) {
-    return api
-      .post('/auth/forgot-password', payload)
-      .then((res) => res)
-      .catch((err) => {
-        if (err.response && err.response.status === 401) {
-          throw new Error('信箱錯誤');
-        } else {
-          throw new Error('忘記密碼send失敗，請稍後再試');
-        }
-      });
+  async sendForgetPassword(payload) {
+    try {
+      const res = await api.post('/auth/forgot-password', payload);
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '發送失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   },
 
-  resetPassword(payload) {
-    return api
-      .post('/auth/reset-password', payload)
-      .then((res) => res)
-
-      .catch((err) => {
-        // if (err.response && err.response.status === 401) {
-        //   throw new Error('密碼錯誤');
-        // } else {
-        //   throw new Error('重設密碼send失敗，請稍後再試');
-        // }
-        throw err;
-      });
+  async resetPassword(payload) {
+    try {
+      const res = await api.post('/auth/reset-password', payload);
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '重設密碼 send 失敗，請稍後再試';
+      return { success: false, message: msg }; // 保留原始錯誤
+    }
   }
 };
 

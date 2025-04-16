@@ -10,7 +10,7 @@
           <div class="each_input_row">
             <div class="input_title">信箱</div>
             <input type="text" class="input" placeholder="請輸入信箱" v-model.trim="email" />
-            <div class="wrong_word" v-show="loginEmailWrongWordShow">請輸入信箱</div>
+            <div class="wrong_word" v-show="loginEmailWrongWordShow">{{ loginEmailWrongWord }}</div>
           </div>
           <div class="each_input_row">
             <div class="input_title">密碼</div>
@@ -38,7 +38,9 @@
                 placeholder="請輸入信箱"
                 v-model.trim="forgetPasswordEmail"
               />
-              <div class="wrong_word" v-show="forgetPasswordWrongWordShow">請輸入信箱</div>
+              <div class="wrong_word" v-show="forgetPasswordWrongWordShow">
+                {{ forgetPasswordWrongWord }}
+              </div>
             </div>
           </div>
           <div class="send_btn" @click="sendForgetPasswordClick">發送忘記密碼信</div>
@@ -53,11 +55,13 @@
 <script setup>
 import { ref, onMounted, computed, watch, nextTick, onUnmounted } from 'vue';
 import authApi from '@/api/auth';
+import regex from '@/utils/regex';
 import Swal from 'sweetalert2';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const forgetPasswordPlaceShow = ref(false);
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const rememberMeStatus = ref(false);
 const email = ref('');
@@ -70,12 +74,14 @@ const isSendingForgetPassword = ref(false); // 正在發送忘記密碼信
 
 // 登入紅字
 const loginEmailWrongWordShow = ref(false);
+const loginEmailWrongWord = ref('');
 
 // 註冊紅字
 const loginPasswordWrongWordShow = ref(false);
 
 // 忘記密碼紅字
 const forgetPasswordWrongWordShow = ref(false);
+const forgetPasswordWrongWord = ref('');
 
 // loading
 const loadingShow = ref(false);
@@ -95,60 +101,76 @@ onMounted(async () => {
 });
 
 const loginBtnClick = async () => {
-  loginEmailWrongWordShow.value = !email.value;
+  if (!email.value) {
+    loginEmailWrongWordShow.value = true;
+    loginEmailWrongWord.value = '請輸入信箱';
+  } else if (!regex.email.test(email.value)) {
+    loginEmailWrongWordShow.value = true;
+    loginEmailWrongWord.value = '信箱格式不正確';
+  } else {
+    loginEmailWrongWordShow.value = false;
+  }
+
   loginPasswordWrongWordShow.value = !password.value;
   if (loginEmailWrongWordShow.value || loginPasswordWrongWordShow.value) return;
   if (!loginBtnClickStatus.value) await login();
 };
 
 const login = async () => {
-  try {
-    loginBtnClickStatus.value = true;
-    const res = await authApi.login({
-      email: email.value,
-      password: password.value,
-      provider: provider.value
+  // try {
+  loginBtnClickStatus.value = true;
+  const res = await authApi.login({
+    email: email.value,
+    password: password.value,
+    provider: provider.value
+  });
+  console.log('res', res);
+
+  if (res.success) {
+    localStorage.setItem('nowdoToken', res.data.token); // 儲存 token
+    localStorage.setItem('nowdoUser', JSON.stringify(res.data.user));
+    Swal.fire({
+      icon: 'success',
+      title: '登入成功',
+      showConfirmButton: false,
+      timer: 1500
     });
-    console.log('res', res);
-
-    if (res.status === 200) {
-      localStorage.setItem('nowdoToken', res.data.token); // 儲存 token
-      localStorage.setItem('nowdoUser', JSON.stringify(res.data.user));
-      Swal.fire({
-        icon: 'success',
-        title: '登入成功',
-        showConfirmButton: false,
-        timer: 1500
-      });
-      if (rememberMeStatus.value) {
-        const user = {
-          email: email.value,
-          password: password.value
-        };
-        localStorage.setItem('nowdoRememberUser', JSON.stringify(user)); // 儲存 token
-      } else {
-        localStorage.removeItem('nowdoRememberUser');
-      }
-
-      console.log('登入成功');
-      loginBtnClickStatus.value = false;
-      setTimeout(() => {
-        router.push({ name: 'workspace' });
-      }, 500);
+    if (rememberMeStatus.value) {
+      const user = {
+        email: email.value,
+        password: password.value
+      };
+      localStorage.setItem('nowdoRememberUser', JSON.stringify(user)); // 儲存 token
+    } else {
+      localStorage.removeItem('nowdoRememberUser');
     }
-  } catch (err) {
-    console.log('err', err);
-    // alert('登入失敗');
+
+    console.log('登入成功');
+    loginBtnClickStatus.value = false;
+    setTimeout(() => {
+      router.push({ name: 'workspace' });
+    }, 500);
+  } else {
     Swal.fire({
       title: '帳號或密碼錯誤！',
-      text: '請再嘗試登入',
+      text: res.message,
       icon: 'error',
       confirmButtonText: '確認'
     });
-
-    console.error('登入錯誤：', err);
-    loginBtnClickStatus.value = false;
   }
+  // } catch (err) {
+  // console.log('err', err);
+  // alert('登入失敗');
+  // Swal.fire({
+  //   title: '帳號或密碼錯誤！',
+  //   text: '請再嘗試登入',
+  //   icon: 'error',
+  //   confirmButtonText: '確認'
+  // });
+
+  // console.error('登入錯誤：', err);
+  loginBtnClickStatus.value = false;
+  // }
 };
 
 const forgetPasswordPlaceToggle = (status) => {
@@ -161,7 +183,12 @@ const sendForgetPasswordClick = async () => {
 
   if (!forgetPasswordEmail.value) {
     forgetPasswordWrongWordShow.value = true;
+    forgetPasswordWrongWord.value = '請輸入信箱';
+  } else if (!regex.email.test(forgetPasswordEmail.value)) {
+    forgetPasswordWrongWordShow.value = true;
+    forgetPasswordWrongWord.value = '信箱格式不正確';
   } else {
+    // try {
     isSendingForgetPassword.value = true;
     forgetPasswordWrongWordShow.value = false;
     loadingShow.value = true;
@@ -169,7 +196,7 @@ const sendForgetPasswordClick = async () => {
       email: forgetPasswordEmail.value
     };
     const res = await authApi.sendForgetPassword(obj);
-    if (res.status === 200) {
+    if (res.success) {
       Swal.fire({
         // position: 'top-end',
         icon: 'success',
@@ -177,8 +204,28 @@ const sendForgetPasswordClick = async () => {
         showConfirmButton: false,
         timer: 1500
       });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: '發送失敗',
+        text: res.message,
+        confirmButtonText: '確認'
+      });
     }
     console.log('res', res);
+    // isSendingForgetPassword.value = false;
+    // loadingShow.value = false;
+    // } catch (err) {
+    // console.log('err', JSON.stringify(err));
+    // const errorMsg = err.response?.data?.message || '發送失敗，請稍後再試';
+    // console.log('errorMsg', errorMsg);
+    // Swal.fire({
+    //   icon: 'error',
+    //   title: '發送失敗',
+    //   text: errorMsg,
+    //   confirmButtonText: '確認'
+    // });
+    // }
     isSendingForgetPassword.value = false;
     loadingShow.value = false;
   }

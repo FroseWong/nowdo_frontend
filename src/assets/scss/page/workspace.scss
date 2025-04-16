@@ -66,6 +66,7 @@
             border: 1px solid black;
             line-height: 40px;
             display: flex;
+            box-sizing: border-box;
             .search_left {
               width: 40px;
               text-align: center;
@@ -103,6 +104,28 @@
           position: relative;
           background-size: cover;
           background-position: center;
+
+          .fa-gear {
+            background: rgba(255, 255, 255, 0.5); /* 半透明白 */
+            backdrop-filter: blur(10px); /* 模糊背景 */
+            -webkit-backdrop-filter: blur(10px); /* Safari 支援 */
+            // border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 柔和陰影 */
+            padding: 7px;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            border-radius: 0px 8px 0px 8px;
+            font-size: 10px;
+            z-index: 1;
+            &:hover {
+              background: rgba(255, 255, 255, 0.276); /* 半透明白 */
+
+              // font-size: 30px;
+
+            }
+          }
+
           &:hover {
             &::after {
               content: '';
@@ -133,6 +156,7 @@
               }
             }
             .board_title {
+              width: auto;
               margin-bottom: 5px;
               font-size: $pc_h6;
             }
@@ -141,6 +165,7 @@
             }
           }
           .board_title {
+            width: 89%;
           }
           .board_description {
           }

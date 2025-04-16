@@ -17,7 +17,7 @@
           <div class="each_input_row">
             <div class="input_title">信箱</div>
             <input type="text" class="input" placeholder="請輸入信箱" v-model.trim="email" />
-            <div class="wrong_word" v-show="emailWrongWordShow">請輸入信箱</div>
+            <div class="wrong_word" v-show="emailWrongWordShow">{{ emailWrongWord }}</div>
           </div>
           <div class="each_input_row">
             <div class="input_title">密碼</div>
@@ -34,6 +34,7 @@
 <script setup>
 import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import Swal from 'sweetalert2';
+import regex from '@/utils/regex';
 import { useRoute, useRouter } from 'vue-router';
 
 import userApi from '@/api/user';
@@ -53,6 +54,8 @@ const usernameWrongWordShow = ref(false);
 const emailWrongWordShow = ref(false);
 const passwordWrongWordShow = ref(false);
 
+const emailWrongWord = ref('');
+
 // Data
 const username = ref('');
 const email = ref('');
@@ -67,41 +70,52 @@ const confirmBtnClick = async () => {
   emailWrongWordShow.value = !email.value;
   passwordWrongWordShow.value = !password.value;
 
+  if (!email.value) {
+    emailWrongWordShow.value = true;
+    emailWrongWord.value = '請輸入信箱';
+  } else if (!regex.email.test(email.value)) {
+    emailWrongWordShow.value = true;
+    emailWrongWord.value = '信箱格式不正確';
+  } else {
+    emailWrongWordShow.value = false;
+  }
+
   if (!(usernameWrongWordShow.value || emailWrongWordShow.value || passwordWrongWordShow.value)) {
-    try {
-      const obj = {
-        username: username.value,
-        email: email.value,
-        password: password.value,
-        provider: 'local',
-        provider_id: null
-      };
-      console.log('obj', obj);
-      const res = await userApi.createNewUser(obj);
-      if (res && res.id) {
-        Swal.fire({
-          icon: 'success',
-          title: '帳號創建成功',
-          showConfirmButton: false,
-          timer: 1500
-        });
+    // try {
+    const obj = {
+      username: username.value,
+      email: email.value,
+      password: password.value,
+      provider: 'local',
+      provider_id: null
+    };
+    console.log('obj', obj);
+    const res = await userApi.createNewUser(obj);
+    if (res.success) {
+      Swal.fire({
+        icon: 'success',
+        title: '帳號創建成功',
+        showConfirmButton: false,
+        timer: 1500
+      });
 
-        setTimeout(() => {
-          router.push({ name: 'login' });
-        });
-      }
-    } catch (err) {
-      console.error('❌ 註冊錯誤：', err);
-
-      const errorMsg = err.response?.data?.message || '註冊失敗，請稍後再試';
-
+      setTimeout(() => {
+        router.push({ name: 'login' });
+      });
+    } else {
       Swal.fire({
         icon: 'error',
         title: '註冊失敗',
-        text: errorMsg,
+        text: res?.message,
         confirmButtonText: '確認'
       });
     }
+    // if (res && res.id) {
+    // }
+    // } catch (err) {
+    // console.error('❌ 註冊錯誤：', err);
+
+    // }
   }
 
   console.log('confirm');

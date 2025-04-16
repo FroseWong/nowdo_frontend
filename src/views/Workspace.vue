@@ -1,7 +1,10 @@
 <template>
   <div class="workspace" ref="workspace">
     <Header />
-    <AddBoardPopup />
+    <!-- <AddBoardPopup />
+    <UpdateBoardPopup /> -->
+
+    <BoardPopup />
     <div class="mid_place">
       <LeftSlide
         :boardList="originBoardList"
@@ -74,6 +77,11 @@
             @click="goToBoard(eachBoard.id)"
           >
             <div class="board_title">{{ eachBoard.boardTitle }}</div>
+            <font-awesome-icon
+              :icon="['fas', 'gear']"
+              class="fa-solid fa-gear"
+              @click.stop="updateBoardPopupClick(eachBoard)"
+            />
           </div>
         </div>
       </div>
@@ -86,7 +94,9 @@ import { ref, onMounted, computed, watch, nextTick, onUnmounted } from 'vue';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
 import LeftSlide from '@/components/LeftSlide.vue';
-import AddBoardPopup from '@/components/AddBoardPopup.vue';
+// import AddBoardPopup from '@/components/AddBoardPopup.vue';
+// import UpdateBoardPopup from '@/components/UpdateBoardPopup.vue';
+import BoardPopup from '@/components/BoardPopup.vue';
 import EventBus from '@/utils/eventBus';
 import BusEvents from '@/utils/busEvents';
 import userApi from '@/api/user';
@@ -103,14 +113,22 @@ onMounted(async () => {
 
   if (workspace.value) workspace.value.addEventListener('click', handleWorkspaceClickOutside);
   EventBus.on(BusEvents.ADD_BOARD_OVER, loadBoards);
+  EventBus.on(BusEvents.UPDATE_BOARD_OVER, loadBoards);
+  EventBus.on(BusEvents.DELETE_IMAGE, loadBoards);
   console.log('leftCount', leftCount.value);
 });
 
 onUnmounted(() => {
   if (workspace.value) workspace.value.removeEventListener('click', handleWorkspaceClickOutside);
+  EventBus.off(BusEvents.ADD_BOARD_OVER, loadBoards);
+  EventBus.off(BusEvents.UPDATE_BOARD_OVER, loadBoards);
+  EventBus.off(BusEvents.DELETE_IMAGE, loadBoards);
 });
 
 const leftCount = computed(() => 10 - originBoardList.value.length);
+
+const addBoardPopupShow = ref(false);
+const updateBoardPopupShow = ref(false);
 
 const searchText = ref('');
 const workspace = ref(null);
@@ -130,8 +148,10 @@ const loadBoards = async () => {
   console.log('load!');
   searchText.value = '';
   const boardListRes = await boardApi.getBoards();
-  originBoardList.value = [...boardListRes];
-  boardList.value = [...originBoardList.value];
+  if (boardListRes.success) {
+    originBoardList.value = [...boardListRes.data];
+    boardList.value = [...originBoardList.value];
+  }
 };
 
 const originBoardList = ref([
@@ -202,7 +222,14 @@ const sortBoardByCreatedAt = () => {
 };
 
 const goToBoard = (boardId) => {
+  console.log('boardId', boardId);
   router.push({ name: 'board', params: { boardId: boardId } });
+};
+
+const updateBoardPopupClick = (board) => {
+  console.log('board', board);
+  console.log('workspace.vue開update board');
+  EventBus.emit(BusEvents.UPDATE_BOARD, { status: true, data: board });
 };
 </script>
 

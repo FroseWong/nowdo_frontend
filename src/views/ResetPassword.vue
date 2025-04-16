@@ -48,10 +48,6 @@ onMounted(() => {
 
 const forgetPasswordPlaceShow = ref(false);
 
-const forgetPasswordPlaceToggle = (status) => {
-  forgetPasswordPlaceShow.value = status;
-};
-
 const confirmBtnClick = async () => {
   console.log('token', token.value);
   let status = true;
@@ -83,30 +79,23 @@ const confirmBtnClick = async () => {
       password: password.value
     };
 
-    try {
-      const res = await authApi.resetPassword(obj);
-      if (res.status === 200) {
-        Swal.fire({
-          icon: 'success',
-          title: '密碼已變更',
-          showConfirmButton: false,
-          timer: 1500
-        });
+    const res = await authApi.resetPassword(obj);
+    if (res.success) {
+      Swal.fire({
+        icon: 'success',
+        title: '密碼已變更',
+        showConfirmButton: false,
+        timer: 1500
+      });
 
-        setTimeout(() => {
-          router.push({ name: 'login' });
-        });
-      }
-      console.log('res', res);
-    } catch (err) {
-      // console.log('err', JSON.stringify(err));
-      console.log('err.response', err.response);
-      const errorMsg = err.response?.data?.message || '變更失敗，請稍後再試';
-
+      setTimeout(() => {
+        router.push({ name: 'login' });
+      });
+    } else {
       Swal.fire({
         icon: 'error',
         title: '變更失敗',
-        text: errorMsg,
+        text: res?.message,
         confirmButtonText: '確認'
       });
     }

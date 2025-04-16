@@ -1,94 +1,54 @@
 // src/api/user.js
 import api from './index';
+import authUtil from '@/utils/authUtil';
 
 const cardApi = {
-  getToken() {
-    const token = localStorage.getItem('nowdoToken');
-    return token;
-  },
-  createNewCard(cardData) {
-    const token = this.getToken();
-    return api
-      .post('/card', cardData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data;
-        } else {
-          throw new Error('create card fail');
-        }
-      })
-      .catch((err) => {
-        console.log('create card api err, ', err);
-        throw err;
+  async createNewCard(cardData) {
+    try {
+      const res = await api.post('/card', cardData, {
+        headers: authUtil.getAuthHeader()
       });
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '創建失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   },
-  updateCard(cardData) {
-    const token = this.getToken();
-    return api
-      .patch('/card', cardData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data;
-        } else {
-          throw new Error('card patch fail');
-        }
-      })
-      .catch((err) => {
-        console.log('card patch api err, ', err);
-        throw err;
+  async updateCard(cardData) {
+    try {
+      const res = await api.patch('/card', cardData, {
+        headers: authUtil.getAuthHeader()
       });
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '更新失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   },
-  updateCardOrder(cardData) {
-    const token = this.getToken();
-    return api
-      .patch('/card/order', cardData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data;
-        } else {
-          throw new Error('card order patch fail');
-        }
-      })
-      .catch((err) => {
-        console.log('card order patch api err, ', err);
-        throw err;
+  async updateCardOrder(cardData) {
+    try {
+      const res = await api.patch('/card/order', cardData, {
+        headers: authUtil.getAuthHeader()
       });
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '更新失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   },
-  deleteCard(cardId) {
-    const token = this.getToken();
-    return api
-      .delete('/card', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+  async deleteCard(cardId) {
+    try {
+      const res = await api.delete('/card', {
+        headers: authUtil.getAuthHeader(),
         data: {
           cardId
         }
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data;
-        } else {
-          throw new Error('delete list fail');
-        }
-      })
-      .catch((err) => {
-        console.log('delete list api err, ', err);
-        throw err;
       });
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '刪除失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   }
 };
 

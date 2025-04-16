@@ -1,96 +1,84 @@
 import api from './index';
+import authUtil from '@/utils/authUtil';
 
 const boardApi = {
-  getToken() {
-    const token = localStorage.getItem('nowdoToken');
-    return token;
-  },
-  getBoards() {
-    const token = this.getToken();
-    // console.log('token', token);
-    return api
-      .get('/board', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data;
-        } else {
-          throw new Error('get boards fail');
-        }
-      })
-      .catch((err) => {
-        console.log('get boards api err, ', err);
-        throw err;
+  async getBoards() {
+    try {
+      const res = await api.get('/board', {
+        headers: authUtil.getAuthHeader()
       });
+      return { success: true, data: res?.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '取得board失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   },
-  createBoard(boardTitle, pictureId) {
-    const token = this.getToken();
-    return api
-      .post(
+  async createBoard(boardTitle, pictureId) {
+    try {
+      const res = await api.post(
         '/board',
         {
           boardTitle,
           pictureId
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: authUtil.getAuthHeader()
         }
-      )
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data;
-        } else {
-          throw new Error('create board fail');
-        }
-      })
-      .catch((err) => {
-        console.log('create board api err, ', err);
-        throw err;
-      });
+      );
+      return { success: true, data: res.data };
+    } catch (err) {
+      console.log(err);
+      const msg = err.response?.data?.message || '取得失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   },
-  getBoardDetail(boardId) {
-    const token = this.getToken();
 
-    return api
-      .get(`/board/${boardId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      .then((res) => res.data)
-      .catch((err) => {
-        console.error('取得 board 詳細資料失敗', err);
-        throw err;
-      });
-  },
-  deleteBoard(boardId) {
-    const token = this.getToken();
-    return api
-      .delete('/board', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+  async updateBoard(boardId, boardTitle, pictureId, newPictureUrl = null, remark = null) {
+    try {
+      const res = await api.patch(
+        `/board/${boardId}`,
+        {
+          boardTitle,
+          pictureId,
+          newPictureUrl,
+          remark
         },
+        {
+          headers: authUtil.getAuthHeader()
+        }
+      );
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '更新失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
+  },
+
+  async getBoardDetail(boardId) {
+    console.log('boardIdR', boardId);
+    try {
+      const res = await api.get(`/board/${boardId}`, {
+        headers: authUtil.getAuthHeader()
+      });
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '取得失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
+  },
+  async deleteBoard(boardId) {
+    try {
+      const res = await api.delete('/board', {
+        headers: authUtil.getAuthHeader(),
         data: {
           boardId
         }
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data;
-        } else {
-          throw new Error('delete list fail');
-        }
-      })
-      .catch((err) => {
-        console.log('delete list api err, ', err);
-        throw err;
       });
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '刪除失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   }
 };
 

@@ -1,82 +1,54 @@
 import api from './index';
+import authUtil from '@/utils/authUtil';
 
 const pictureApi = {
   getToken() {
     const token = localStorage.getItem('nowdoToken');
     return token;
   },
-  getPictures() {
-    const token = this.getToken();
-    // console.log('token', token);
-    return api
-      .get('/picture', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data;
-        } else {
-          throw new Error('get pictures fail');
-        }
-      })
-      .catch((err) => {
-        console.log('get pictures api err, ', err);
-        throw err;
+  async getPictures() {
+    try {
+      const res = await api.get('/picture', {
+        headers: authUtil.getAuthHeader()
       });
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '取得失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   },
 
-  uploadPhoto(url, remark = null) {
-    const token = this.getToken();
-    return api
-      .post(
+  async uploadPhoto(url, remark = null) {
+    try {
+      const res = await api.post(
         '/picture',
         {
           imageUrl: url,
           remark: remark
         },
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: authUtil.getAuthHeader()
         }
-      )
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data;
-        } else {
-          throw new Error('upload picture fail');
-        }
-      })
-      .catch((err) => {
-        console.log('upload picture api err, ', err);
-        throw err;
-      });
+      );
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '更新失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   },
-  deletePhoto(pictureId) {
-    const token = this.getToken();
-    return api
-      .delete('/picture', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+  async deletePhoto(pictureId) {
+    try {
+      const res = await api.delete('/picture', {
+        headers: authUtil.getAuthHeader(),
         data: {
           pictureId
         }
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data;
-        } else {
-          throw new Error('delete picture fail');
-        }
-      })
-      .catch((err) => {
-        console.log('delete picture api err, ', err);
-        throw err;
       });
+      return { success: true, data: res.data };
+    } catch (err) {
+      const msg = err.response?.data?.message || '刪除失敗，請稍後再試';
+      return { success: false, message: msg };
+    }
   }
 };
 
