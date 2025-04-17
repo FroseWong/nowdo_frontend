@@ -90,6 +90,8 @@ onUnmounted(() => {
   EventBus.off(BusEvents.ADD_LOAD_PICTURE, getLoadPicture);
 });
 
+const isCreatingBoard = ref(false);
+
 const focusImageIndex = ref();
 const boardNameInput = ref('');
 const imageArrUrl = ref([
@@ -170,9 +172,9 @@ const confirmBtnClick = async () => {
   }
 
   if (!checkStatus) return;
-
+  if (isCreatingBoard.value) return;
   let pictureId;
-
+  isCreatingBoard.value = true;
   if (focusImageIndex.value === -1) {
     if (!file.value) return;
     try {
@@ -225,7 +227,7 @@ const confirmBtnClick = async () => {
       confirmButtonText: '確認'
     });
   }
-
+  isCreatingBoard.value = false;
   // } catch (err) {
   // const errorMsg = err.response?.data?.message || '建立看板失敗，請稍後再試';
 

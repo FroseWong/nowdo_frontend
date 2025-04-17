@@ -2,10 +2,6 @@ import api from './index';
 import authUtil from '@/utils/authUtil';
 
 const pictureApi = {
-  getToken() {
-    const token = localStorage.getItem('nowdoToken');
-    return token;
-  },
   async getPictures() {
     try {
       const res = await api.get('/picture', {

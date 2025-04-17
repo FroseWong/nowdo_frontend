@@ -95,6 +95,7 @@
         }
 
         .board_pre_div {
+          min-width: 24px;
           width: 24px;
           height: 20px;
           margin-right: 10px;
@@ -102,6 +103,8 @@
           background-position: center;
         }
         .board_title {
+          line-height: 1.2;
+          word-break: break-all;
         }
       }
     }

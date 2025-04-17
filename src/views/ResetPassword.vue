@@ -42,15 +42,17 @@ const rePasswordWrongWordShow = ref(false);
 const password = ref('');
 const rePassword = ref('');
 
+const isResetingPassword = ref(false);
+
 onMounted(() => {
   token.value = route.query.token || '';
 });
 
-const forgetPasswordPlaceShow = ref(false);
-
 const confirmBtnClick = async () => {
   console.log('token', token.value);
   let status = true;
+
+  if (isResetingPassword.value) return;
 
   if (!password.value) {
     passwordWrongWordShow.value = true;
@@ -78,7 +80,7 @@ const confirmBtnClick = async () => {
       token: token.value,
       password: password.value
     };
-
+    isResetingPassword.value = true;
     const res = await authApi.resetPassword(obj);
     if (res.success) {
       Swal.fire({
@@ -100,6 +102,7 @@ const confirmBtnClick = async () => {
       });
     }
   }
+  isResetingPassword.value = false;
 };
 </script>
 

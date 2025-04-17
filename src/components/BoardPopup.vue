@@ -91,6 +91,8 @@ onUnmounted(() => {
   EventBus.off(BusEvents.ADD_LOAD_PICTURE, getLoadPicture);
 });
 
+const isCreatingBoard = ref(false);
+
 const boardData = ref();
 
 const focusImageIndex = ref();
@@ -201,10 +203,10 @@ const confirmBtnClick = async () => {
   }
 
   if (!checkStatus) return;
-
+  if (isCreatingBoard.value) return;
   let pictureId = 0;
   let newPictureUrl = null;
-
+  isCreatingBoard.value = true;
   if (focusImageIndex.value === -1) {
     if (!file.value) return;
     try {
@@ -287,6 +289,7 @@ const confirmBtnClick = async () => {
       });
     }
   }
+  isCreatingBoard.value = false;
 };
 
 // 確認要刪除圖片
@@ -311,7 +314,6 @@ const makeSureDeleteImg = async (img) => {
           icon: 'success'
         });
         EventBus.emit(BusEvents.DELETE_IMAGE);
-        console.log('add觸發了delete image');
         loadPicture();
 
         focusImageIndex.value = 0;

@@ -250,8 +250,8 @@ const boardEvents = ref([
   BusEvents.DELETE_IMAGE
 ]);
 
-const addBoardPopupShow = ref(false);
-const updateBoardPopupShow = ref(false);
+const isCreatingList = ref(false);
+const isCreatingCard = ref(false);
 
 const boardId = ref('');
 const pictureId = ref(-1);
@@ -497,7 +497,9 @@ const addingListToggle = (status) => {
 };
 
 const createNewList = async () => {
+  if (isCreatingList.value) return;
   if (listTextAreaInputValue.value) {
+    isCreatingList.value = true;
     const obj = {
       boardId: boardId.value,
       listTitle: listTextAreaInputValue.value
@@ -507,6 +509,7 @@ const createNewList = async () => {
     await loadBoardDetail(boardId.value);
 
     addingListToggle(false);
+    isCreatingList.value = false;
   }
 };
 
@@ -535,7 +538,9 @@ const deleteList = async (list) => {
 };
 
 const createNewCard = async (list) => {
+  if (isCreatingCard.value) return;
   if (cardTextAreaInputValue.value) {
+    isCreatingCard.value = true;
     const obj = {
       cardTitle: cardTextAreaInputValue.value,
       listId: list.id
@@ -543,6 +548,7 @@ const createNewCard = async (list) => {
 
     await cardApi.createNewCard(obj);
     await loadBoardDetail(boardId.value);
+    isCreatingCard.value = false;
   }
 };
 
