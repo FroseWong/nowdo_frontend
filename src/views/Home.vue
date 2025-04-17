@@ -60,26 +60,26 @@
 import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import HomeHeader from '@/components/HomeHeader.vue';
 import Footer from '@/components/Footer.vue';
-import imagePath0 from '@/assets/img/page/home_btn_desc_0.png';
-import imagePath1 from '@/assets/img/page/home_btn_desc_1.png';
-import imagePath2 from '@/assets/img/page/home_btn_desc_2.png';
 import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const picFocusIndex = ref(0);
+const imgArr = ref([
+  'https://firebasestorage.googleapis.com/v0/b/test-da97e.appspot.com/o/boards%2Fworkspace.png?alt=media&token=811fab06-3004-4f96-8936-f238d7dfb044',
+  'https://firebasestorage.googleapis.com/v0/b/test-da97e.appspot.com/o/boards%2FBoard.png?alt=media&token=a572a78f-7591-4f05-a6e7-af580dc8217b',
+  'https://firebasestorage.googleapis.com/v0/b/test-da97e.appspot.com/o/boards%2Fcard_2.png?alt=media&token=45883cc8-3883-49da-b201-237c22bf3b23'
+]);
+
+onMounted(() => {
+  imgArr.value.forEach((src) => {
+    const img = new Image();
+    img.src = src;
+  });
+});
 
 const email = ref('');
 
-const imgComputed = computed(() => {
-  if (picFocusIndex.value === 0) return imagePath0;
-  else if (picFocusIndex.value === 1) return imagePath1;
-  else if (picFocusIndex.value === 2) return imagePath2;
-});
-
-// const image = ref('./assets/img/page/home_btn_desc_0.png');
-// const image = ref(new URL('../../assets/img/page/home_btn_desc_0.png', import.meta.url).href)
-// ← 假設你這行寫在 /src/views/Home.vue
-
+const imgComputed = computed(() => imgArr.value[picFocusIndex.value]);
 const changeFocusIndex = (i) => {
   picFocusIndex.value = i;
 };
