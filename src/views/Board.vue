@@ -98,7 +98,7 @@
             orientation="horizontal"
             @drop="(dropResult) => onDropList(dropResult, eachList)"
           >
-            <Draggable v-for="(eachList, i) in listArray" :key="eachList.id">
+            <Draggable v-for="(eachList, i) in listArray" :key="eachList.id" v-show="eachList.listTitle">
               <div class="each_list">
                 <div class="list_title_row">
                   <div class="title">{{ eachList.listTitle }}</div>
