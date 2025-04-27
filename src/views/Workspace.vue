@@ -8,8 +8,6 @@
     <div class="mid_place">
       <LeftSlide
         :boardList="originBoardList"
-        v-if="originBoardList.length > 0 || 1"
-        :isFull="leftCount <= 0"
       />
       <div class="workspace_right">
         <div class="title">看板</div>

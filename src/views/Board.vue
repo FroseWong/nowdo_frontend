@@ -73,8 +73,6 @@
     <div class="mid_place">
       <LeftSlide
         :boardList="originBoardList"
-        v-if="originBoardList.length > 0"
-        :boardId="focusIndex"
       />
       <div
         class="board_right"

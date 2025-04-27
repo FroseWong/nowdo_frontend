@@ -55,7 +55,7 @@ onMounted(() => {
   boardId.value = props.boardId;
 });
 
-const props = defineProps(['boardList', 'boardId', 'isFull']);
+const props = defineProps(['boardList', 'boardId']);
 const router = useRouter();
 const boardList = ref([
   { boardTitle: 'boardName1', boardImage: '', backgroundColor: '' },
@@ -78,6 +78,7 @@ watch(
   () => props.boardList,
   (newVal) => {
     boardList.value = newVal;
+    isFull.value = boardList.value.length >= 10;
   }
 );
 
@@ -98,7 +99,7 @@ const boardId = ref();
 // };
 
 const addBoardPopupClick = () => {
-  EventBus.emit(BusEvents.ADD_BOARD, { status: true });
+  if (!isFull.value) EventBus.emit(BusEvents.ADD_BOARD, { status: true });
 };
 
 const workspaceClick = () => {
