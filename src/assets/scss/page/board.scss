@@ -24,7 +24,13 @@
       }
       .card_title {
         word-break: break-word;
-        padding-top: 5px;
+        // padding-top: 5px;
+        // padding-left: 5px;
+        // padding-right: 5px;
+        padding: 5px;
+        // background-color: red;
+        width: 100%;
+        text-align: center;
       }
       .card_title_input {
         padding-left: 5px;

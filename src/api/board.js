@@ -55,6 +55,10 @@ const boardApi = {
   },
 
   async getBoardDetail(boardId) {
+    if (!/^\d+$/.test(boardId)) {
+      console.warn('boardId 格式錯誤，必須是正整數');
+      return { success: false, message: '無效的看板ID' };
+    }
     console.log('boardIdR', boardId);
     try {
       const res = await api.get(`/board/${boardId}`, {

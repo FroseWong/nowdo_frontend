@@ -98,7 +98,11 @@
             orientation="horizontal"
             @drop="(dropResult) => onDropList(dropResult, eachList)"
           >
-            <Draggable v-for="(eachList, i) in listArray" :key="eachList.id" v-show="eachList.listTitle">
+            <Draggable
+              v-for="(eachList, i) in listArray"
+              :key="eachList.id"
+              v-show="eachList.listTitle"
+            >
               <div class="each_list">
                 <div class="list_title_row">
                   <div class="title">{{ eachList.listTitle }}</div>
@@ -337,7 +341,7 @@ const loadBoardDetail = async () => {
     // console.log('focusIndex', focusIndex.value);
   } else {
     console.log('res', res.message);
-    // router.push({ name: 'workspace' });
+    router.push({ name: 'workspace' });
   }
 };
 
@@ -474,19 +478,21 @@ const isOrderChanged = (before, after) => {
 
 // drag logic
 const applyDrag = (arr, dragResult) => {
-  const { removedIndex, addedIndex, payload } = dragResult;
+  if (dragResult) {
+    const { removedIndex, addedIndex, payload } = dragResult;
 
-  if (removedIndex === null && addedIndex === null) return arr;
-  const result = [...arr];
-  let itemToAdd = payload;
+    if (removedIndex === null && addedIndex === null) return arr;
+    const result = [...arr];
+    let itemToAdd = payload;
 
-  if (removedIndex !== null) {
-    itemToAdd = result.splice(removedIndex, 1)[0];
+    if (removedIndex !== null) {
+      itemToAdd = result.splice(removedIndex, 1)[0];
+    }
+    if (addedIndex !== null) {
+      result.splice(addedIndex, 0, itemToAdd);
+    }
+    return result;
   }
-  if (addedIndex !== null) {
-    result.splice(addedIndex, 0, itemToAdd);
-  }
-  return result;
 };
 
 const addingListToggle = (status) => {
