@@ -73,6 +73,7 @@
     <div class="mid_place">
       <LeftSlide
         :boardList="originBoardList"
+        :boardId="focusIndex"
       />
       <div
         class="board_right"
