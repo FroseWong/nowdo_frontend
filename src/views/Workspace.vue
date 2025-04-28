@@ -1,4 +1,5 @@
 <template>
+  <div class="page_loading" v-show="loadingShow"></div>
   <div class="workspace" ref="workspace">
     <Header />
     <!-- <AddBoardPopup />
@@ -6,9 +7,7 @@
 
     <BoardPopup />
     <div class="mid_place">
-      <LeftSlide
-        :boardList="originBoardList"
-      />
+      <LeftSlide :boardList="originBoardList" />
       <div class="workspace_right">
         <div class="title">看板</div>
         <div class="filter_row">
@@ -128,6 +127,8 @@ const leftCount = computed(() => 10 - originBoardList.value.length);
 const addBoardPopupShow = ref(false);
 const updateBoardPopupShow = ref(false);
 
+const loadingShow = ref(false);
+
 const searchText = ref('');
 const workspace = ref(null);
 const selectListShow = ref(false);
@@ -144,12 +145,14 @@ const toggleSelectList = () => {
 
 const loadBoards = async () => {
   console.log('load!');
+  loadingShow.value = true;
   searchText.value = '';
   const boardListRes = await boardApi.getBoards();
   if (boardListRes.success) {
     originBoardList.value = [...boardListRes.data];
     boardList.value = [...originBoardList.value];
   }
+  loadingShow.value = false;
 };
 
 const originBoardList = ref([

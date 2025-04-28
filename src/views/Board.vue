@@ -1,4 +1,5 @@
 <template>
+  <div class="page_loading" v-show="loadingShow"></div>
   <div class="board" ref="board">
     <div class="overlay" v-show="cardDetailShow"></div>
 
@@ -71,10 +72,7 @@
 
     <!-- <BoardPopup :show="updateBoardPopupShow" mode="edit" @close="updateBoardPopupShow = false" /> -->
     <div class="mid_place">
-      <LeftSlide
-        :boardList="originBoardList"
-        :boardId="focusIndex"
-      />
+      <LeftSlide :boardList="originBoardList" :boardId="focusIndex" />
       <div
         class="board_right"
         :style="{
@@ -247,6 +245,8 @@ onUnmounted(() => {
 const route = useRoute();
 const router = useRouter();
 
+const loadingShow = ref(false);
+
 const boardEvents = ref([
   BusEvents.ADD_BOARD_OVER,
   BusEvents.UPDATE_BOARD_OVER,
@@ -277,7 +277,9 @@ watch(
   () => route.params.boardId,
   async (newBoardId) => {
     boardId.value = newBoardId;
+    loadingShow.value = true;
     await loadBoardDetail(newBoardId); // 👉 重新抓資料
+    loadingShow.value = false;
   }
 );
 
