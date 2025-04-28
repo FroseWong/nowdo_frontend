@@ -229,8 +229,10 @@ onMounted(async () => {
     EventBus.on(event, getLeftBoards);
     EventBus.on(event, loadBoardDetail);
   });
+  loadingShow.value = true;
   await getLeftBoards();
   await loadBoardDetail(boardId.value);
+  loadingShow.value = false;
 });
 
 onUnmounted(() => {

@@ -1,5 +1,6 @@
 import api from './index';
 import authUtil from '@/utils/authUtil';
+import regex from '@/utils/regex';
 
 const boardApi = {
   async getBoards() {
@@ -55,7 +56,7 @@ const boardApi = {
   },
 
   async getBoardDetail(boardId) {
-    if (!/^\d+$/.test(boardId)) {
+    if (!regex.number.test(boardId)) {
       console.warn('boardId 格式錯誤，必須是正整數');
       return { success: false, message: '無效的看板ID' };
     }
