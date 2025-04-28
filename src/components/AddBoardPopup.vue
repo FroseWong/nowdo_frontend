@@ -222,7 +222,7 @@ const confirmBtnClick = async () => {
   } else {
     Swal.fire({
       icon: 'error',
-      title: '註冊失敗',
+      title: '創建失敗',
       text: res.message,
       confirmButtonText: '確認'
     });

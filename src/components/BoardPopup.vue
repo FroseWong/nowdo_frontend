@@ -235,6 +235,9 @@ const confirmBtnClick = async () => {
   } else {
     pictureId = imageArrUrl.value[focusImageIndex.value].id;
   }
+  console.log('newPictureUrl', newPictureUrl);
+  console.log('pictureId', pictureId);
+  console.log('mode.value', mode.value);
 
   // try {
   if (mode.value === 'add') {
@@ -255,7 +258,7 @@ const confirmBtnClick = async () => {
     } else {
       Swal.fire({
         icon: 'error',
-        title: '註冊失敗',
+        title: '新增失敗',
         text: res.message,
         confirmButtonText: '確認'
       });
@@ -283,7 +286,7 @@ const confirmBtnClick = async () => {
     } else {
       Swal.fire({
         icon: 'error',
-        title: '註冊失敗',
+        title: '更新失敗',
         text: res.message,
         confirmButtonText: '確認'
       });
