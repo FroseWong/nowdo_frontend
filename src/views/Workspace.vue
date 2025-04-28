@@ -104,8 +104,10 @@ onMounted(async () => {
   // originBoardList.value.forEach((eachBoard) => {
   //   eachBoard.backgroundColor = getRandomColor();
   // });
+  loadingShow.value = true;
+  await loadBoards();
+  loadingShow.value = false;
 
-  loadBoards();
   console.log('originBoardList', originBoardList.value);
 
   if (workspace.value) workspace.value.addEventListener('click', handleWorkspaceClickOutside);
@@ -145,14 +147,12 @@ const toggleSelectList = () => {
 
 const loadBoards = async () => {
   console.log('load!');
-  loadingShow.value = true;
   searchText.value = '';
   const boardListRes = await boardApi.getBoards();
   if (boardListRes.success) {
     originBoardList.value = [...boardListRes.data];
     boardList.value = [...originBoardList.value];
   }
-  loadingShow.value = false;
 };
 
 const originBoardList = ref([
