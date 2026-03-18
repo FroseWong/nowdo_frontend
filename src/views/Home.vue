@@ -65,10 +65,12 @@ const router = useRouter();
 
 const picFocusIndex = ref(0);
 const imgArr = ref([
-  'https://firebasestorage.googleapis.com/v0/b/test-da97e.appspot.com/o/boards%2Fworkspace.png?alt=media&token=811fab06-3004-4f96-8936-f238d7dfb044',
-  'https://firebasestorage.googleapis.com/v0/b/test-da97e.appspot.com/o/boards%2FBoard.png?alt=media&token=a572a78f-7591-4f05-a6e7-af580dc8217b',
-  'https://firebasestorage.googleapis.com/v0/b/test-da97e.appspot.com/o/boards%2Fcard_2.png?alt=media&token=45883cc8-3883-49da-b201-237c22bf3b23'
+  'https://plus.unsplash.com/premium_photo-1682608388956-11f98495e165?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1512314889357-e157c22f938d?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1634055980590-1a44e5a8b3e4?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
 ]);
+
+
 
 onMounted(() => {
   imgArr.value.forEach((src) => {
